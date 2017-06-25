@@ -10,7 +10,7 @@ module SimpleCalendar
       @view_context = view_context
       @options = opts
 
-      @open_closed = opts.delete(:open_closed)
+      @exclude_end_time = opts.delete(:exclude_end_time)
 
       @params = @view_context.respond_to?(:params) ? @view_context.params : Hash.new
       @params = @params.to_unsafe_h if @params.respond_to?(:to_unsafe_h)
@@ -80,21 +80,34 @@ module SimpleCalendar
                            end
       end
 
-      def event_end_date(event, event_start_date)
+      ##
+      # Calculate the end date for the end time. Return nil if no end time.
+      # If the end time is the beginning of the day, and `exclude_end_time: true`,
+      # end the day before the end time.
+      def event_end_date(event)
         end_time = event.respond_to?(end_attribute) && event.send(end_attribute)
-        return event_start_date unless end_time
+        return nil unless end_time
 
-        @open_closed && end_time == end_time.midnight ?
-          (end_time - 1.day).to_date :
-          end_time
+        end_date = end_time.to_date
+        end_date -= 1 if @exclude_end_time && end_time == end_time.to_date
+        end_date
       end
+
+      ##
+      # Calculate the smallest date range that includes the event start and
+      # end times.
+      def event_date_range(event)
+        event_start_date = event.send(attribute).to_date
+
+        event_start_date..(event_end_date(event) || event_start_date)
+      end
+
 
       def group_events_by_date(events)
         events_grouped_by_date = Hash.new {|h,k| h[k] = [] }
 
         events.each do |event|
-          event_start_date = event.send(attribute).to_date
-          (event_start_date..event_end_date(event, event_start_date)).each do |enumerated_date|
+          event_date_range(event).each do |enumerated_date|
             events_grouped_by_date[enumerated_date] << event
           end
         end

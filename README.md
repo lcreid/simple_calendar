@@ -232,6 +232,24 @@ example. If you want to set this globally, you can put this line in
 config.beginning_of_week = :sunday
 ```
 
+### Handling of End Time
+
+Remember that midnight is actually the start of the day.
+So by default, `simple_calendar` shows an event that ends at midnight
+on the calendar for that day.
+
+You may not want events that end at midnight to show up on the calander
+for that day.
+Specify `exclude_end_time: true` as an option when you create the calendar
+so that events that end at midnight
+*don't* appear on the date of the end time:
+
+```erb
+<%= calendar partial: 'products/calendar', exclude_end_time: true do |date| %>
+  <%= date %>
+<% end %>
+```
+
 ### Default Stylesheet
 
 If you're using Bootstrap, the calendar should already have a border and

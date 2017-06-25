@@ -89,7 +89,7 @@ describe SimpleCalendar::Calendar do
       events = [event1, event2, event3].shuffle
       calendar = SimpleCalendar::Calendar.new(ViewContext.new,
         events: events,
-        open_closed: true)
+        exclude_end_time: true)
 
       sorted_events = calendar.send(:sorted_events)
 
